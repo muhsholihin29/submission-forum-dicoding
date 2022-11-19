@@ -26,9 +26,7 @@ describe('/threads endpoint', () => {
                 accessToken: accessToken
             };
             // eslint-disable-next-line no-undef
-            console.log('abc');
             const server = await createServer(container);
-            console.log('cde');
             // Action
             const response = await server.inject({
                 method: 'POST',

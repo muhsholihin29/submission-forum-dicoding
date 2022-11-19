@@ -20,7 +20,6 @@ class ThreadRepositoryPostgres extends ThreadsRepository {
 
         const result = await this._pool.query(query);
 
-        console.log("mytag "+JSON.stringify(result.rows[0]))
         return new Threads({ ...result.rows[0] });
     }
 
@@ -33,7 +32,6 @@ class ThreadRepositoryPostgres extends ThreadsRepository {
 
         const result = await this._pool.query(query);
 
-        console.log("mytag "+JSON.stringify(result.rows[0]))
         return new Threads({ ...result.rows[0] });
     }
 }

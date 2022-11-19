@@ -2,18 +2,19 @@ class Comment {
     constructor(payload) {
         this._verifyPayload(payload)
 
-        const { content, access_token } = payload
+        const { content, threadId, username } = payload
 
         this.content = content;
-        this.access_token = access_token;
+        this.threadId = threadId;
+        this.username = username;
     }
 
-    _verifyPayload({ content, access_token }) {
-        if (!content || !access_token) {
+    _verifyPayload({ content, threadId, username }) {
+        if (!content || !threadId || !username) {
             throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
         }
 
-        if (typeof content !== 'string' || typeof access_token !== 'string') {
+        if (typeof content !== 'string' || typeof threadId !== 'string' || typeof username !== 'string') {
             throw new Error('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
     }

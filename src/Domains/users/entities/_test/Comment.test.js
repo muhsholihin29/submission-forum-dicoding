@@ -15,7 +15,8 @@ describe('a Comment entities', () => {
         // Arrange
         const payload = {
             content: 123,
-            access_token: 'abcd'
+            threadId: 'thread-123',
+            username: 'user-123'
         };
         // Action and Assert
         expect(() => new Comment(payload)).toThrowError('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
@@ -25,12 +26,14 @@ describe('a Comment entities', () => {
         // Arrange
         const payload = {
             content: 'dicoding',
-            access_token: 'Dicoding Indonesia',
+            threadId: 'thread-123',
+            username: 'user-123'
         };
         // Action
-        const { content, access_token} = new Comment(payload);
+        const { content, threadId, username} = new Comment(payload);
         // Assert
         expect(content).toEqual(payload.content);
-        expect(access_token).toEqual(payload.access_token);
+        expect(threadId).toEqual(payload.threadId);
+        expect(username).toEqual(payload.username);
     });
 });

@@ -16,7 +16,6 @@ class ValidateAuthenticationUsecase {
         const { accessToken } = payload;
 
         if (!accessToken) {
-            console.log('mytag4 ')
             throw new Error('VALIDATE_AUTHENTICATION_USE_CASE.NOT_CONTAIN_ACCESS_TOKEN');
         }
 
