@@ -7,19 +7,19 @@ class ValidateAuthenticationUsecase {
 
     async execute(useCasePayload) {
         this._verifyPayload(useCasePayload);
-        const { accessToken } = useCasePayload;
+        const { access_token } = useCasePayload;
 
-        return  await this._authenticationTokenManager.decodePayload(accessToken);
+        return  await this._authenticationTokenManager.decodePayload(access_token);
     }
 
     _verifyPayload(payload) {
-        const { accessToken } = payload;
+        const { access_token } = payload;
 
-        if (!accessToken) {
+        if (!access_token) {
             throw new Error('VALIDATE_AUTHENTICATION_USE_CASE.NOT_CONTAIN_ACCESS_TOKEN');
         }
 
-        if (typeof accessToken !== 'string') {
+        if (typeof access_token !== 'string') {
             throw new Error('VALIDATE_AUTHENTICATION_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
     }

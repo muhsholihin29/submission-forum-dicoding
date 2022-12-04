@@ -1,6 +1,5 @@
 const Thread = require('../../../Domains/threads/entities/Thread');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
-const PasswordHash = require('../../security/PasswordHash');
 const ThreadUseCase = require('../ThreadUseCase');
 
 describe('AddThreadUseCase', () => {
@@ -46,11 +45,8 @@ describe('AddThreadUseCase', () => {
 describe('GetThreadUseCase', () => {
     it('should orchestrating the get thread action correctly', async () => {
         // Arrange
-        const useCasePayload = {
-            id: 'thread-123',
-        };
         const expectedThread = new Thread({
-            id: useCasePayload.id,
+            id:  'thread-123',
             body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
             title: 'judul',
             username: 'user-123'
@@ -71,12 +67,10 @@ describe('GetThreadUseCase', () => {
         });
 
         // Action
-        const registeredThread = await getThreadUseCase.getThread(useCasePayload);
+        const registeredThread = await getThreadUseCase.getThread( 'thread-123');
 
         // Assert
         expect(registeredThread).toStrictEqual(expectedThread);
-        expect(mockThreadRepository.getThread).toBeCalledWith({
-            id: 'thread-123'
-        });
+        expect(mockThreadRepository.getThread).toBeCalledWith('thread-123');
     });
 });

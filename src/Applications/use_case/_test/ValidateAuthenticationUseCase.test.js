@@ -1,4 +1,3 @@
-const AuthenticationRepository = require('../../../Domains/authentications/AuthenticationRepository');
 const AuthenticationTokenManager = require('../../security/AuthenticationTokenManager');
 const ValidateAuthenticationUsecase = require('../ValidateAuthenticationUsecase');
 
@@ -17,7 +16,7 @@ describe('ValidateAuthenticationUseCase', () => {
     it('should throw error if access token not string', async () => {
         // Arrange
         const useCasePayload = {
-            accessToken: 1,
+            access_token: 1,
         };
         const validateAuthenticationUsecase = new ValidateAuthenticationUsecase({});
 
@@ -30,7 +29,7 @@ describe('ValidateAuthenticationUseCase', () => {
     it('should orchestrating the validation authentication action correctly', async () => {
         // Arrange
         const useCasePayload = {
-            accessToken: 'some_refresh_token',
+            access_token: 'some_refresh_token',
         };
 
         const mockAuthenticationTokenManager = new AuthenticationTokenManager();
@@ -48,7 +47,7 @@ describe('ValidateAuthenticationUseCase', () => {
         // Assert
 
         expect(mockAuthenticationTokenManager.decodePayload)
-            .toBeCalledWith(useCasePayload.accessToken);
+            .toBeCalledWith(useCasePayload.access_token);
         expect(accessToken).toEqual(JSON.parse('{"id": "user-123", "username": "dicoding"}'));
     });
 });

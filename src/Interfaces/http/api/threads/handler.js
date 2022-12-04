@@ -12,7 +12,7 @@ class ThreadsHandler {
     async postThreadHandler(request, h) {
         const validateAuthenticationUsecase = this._container.getInstance(ValidateAuthenticationUsecase.name);
         const threadUseCase = this._container.getInstance(ThreadUseCase.name);
-        const validationData = await validateAuthenticationUsecase.execute(request.payload);
+        const validationData = await validateAuthenticationUsecase.execute(request.headers);
         request.payload.username = validationData.username;
         const addedUser = await threadUseCase.addThread(request.payload);
 

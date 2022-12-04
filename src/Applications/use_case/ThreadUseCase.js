@@ -10,8 +10,8 @@ class ThreadUseCase {
         return this._threadRepository.addThread(thread);
     }
 
-    getThread(thread_id) {
-        return this._threadRepository.getThread(thread_id);
+    async getThread(thread_id) {
+        return await this._threadRepository.getThread(thread_id);
     }
 }
 

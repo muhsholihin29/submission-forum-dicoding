@@ -2,7 +2,6 @@ const pool = require('../../database/postgres/pool');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const container = require('../../container');
 const createServer = require('../createServer');
-const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
 const JwtTokenManager = require("../../security/JwtTokenManager");
 const Jwt = require("@hapi/jwt");
 
@@ -23,7 +22,6 @@ describe('/threads endpoint', () => {
             const requestPayload = {
                 title: 'dicoding',
                 body: 'Dicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding Indonesia',
-                accessToken: accessToken
             };
             // eslint-disable-next-line no-undef
             const server = await createServer(container);
@@ -32,6 +30,9 @@ describe('/threads endpoint', () => {
                 method: 'POST',
                 url: '/threads',
                 payload: requestPayload,
+                headers: {
+                    'access_token': accessToken,
+                },
             });
 
             // console.log(response);
@@ -48,7 +49,6 @@ describe('/threads endpoint', () => {
             const accessToken = await jwtTokenManager.createAccessToken({ username: 'dicoding' });
             const requestPayload = {
                 title: 'Dicoding Indonesia',
-                accessToken: accessToken
             };
             const server = await createServer(container);
 
@@ -57,6 +57,9 @@ describe('/threads endpoint', () => {
                 method: 'POST',
                 url: '/threads',
                 payload: requestPayload,
+                headers: {
+                    'access_token': accessToken,
+                },
             });
 
             // Assert
@@ -73,7 +76,6 @@ describe('/threads endpoint', () => {
             const requestPayload = {
                 title: ['dicoding'],
                 body: 'Dicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding Indonesia',
-                accessToken: accessToken
             };
             const server = await createServer(container);
 
@@ -82,6 +84,9 @@ describe('/threads endpoint', () => {
                 method: 'POST',
                 url: '/threads',
                 payload: requestPayload,
+                headers: {
+                    'access_token': accessToken,
+                },
             });
 
             // Assert
@@ -98,7 +103,6 @@ describe('/threads endpoint', () => {
             const requestPayload = {
                 title: 'dicoding',
                 body: 'secret',
-                accessToken: accessToken
             };
             const server = await createServer(container);
 
@@ -107,6 +111,9 @@ describe('/threads endpoint', () => {
                 method: 'POST',
                 url: '/threads',
                 payload: requestPayload,
+                headers: {
+                    'access_token': accessToken,
+                },
             });
 
             // Assert
@@ -119,10 +126,6 @@ describe('/threads endpoint', () => {
         it('should response 200 when get thread by id', async () => {
             await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
             // Arrange
-            const requestPayload = {
-                title: 'dicoding',
-                body: 'secret',
-            };
             const server = await createServer(container);
 
             // Action
