@@ -3,8 +3,8 @@ const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const CommentsTableTestHelper = {
     async addComment({
-                      id = 'comment-123', thread_id = 'thread-123', username = 'secret', content = 'Dicoding Indonesia', date = '2021-08-08T07:26:21.338Z'
-                  }) {
+                      id = 'comment-123', thread_id = 'thread-123', username = 'secret', content = 'Dicoding Indonesia'
+                     }) {
         const query = {
             text: 'INSERT INTO comments VALUES($1, $2, $3, $4, now())',
             values: [id, thread_id, username, content],
@@ -13,23 +13,24 @@ const CommentsTableTestHelper = {
         await pool.query(query);
     },
 
-    async getComment(id) {
+    async getComment(threadId, commentId) {
         const query = {
-            text: 'SELECT * FROM comments WHERE id = $1',
-            values: [id],
+            text: 'SELECT id, thread_id as "threadId", username, content, date FROM comments WHERE id = $1 and thread_id = $2',
+            values: [commentId, threadId],
         };
 
         const result = await pool.query(query);
-        return result.rows;
+
+        return result.rows
     },
 
-    async deleteComment(commentId) {
+    async deleteComment(threadId, commentId) {
         const query = {
-            text: 'DELETE FROM comments WHERE id = $1',
-            values: [commentId],
+            text: 'DELETE FROM comments WHERE id = $1 and thread_id = $2',
+            values: [commentId, threadId],
         };
 
-        await this._pool.query(query);
+        await pool.query(query);
     },
 
     async cleanTable() {

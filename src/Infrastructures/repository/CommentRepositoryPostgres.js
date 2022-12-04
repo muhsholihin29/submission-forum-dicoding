@@ -1,7 +1,6 @@
 const InvariantError = require('../../Commons/exceptions/InvariantError');
 const Comments = require('../../Domains/comments/entities/Comment');
 const CommentsRepository = require('../../Domains/comments/CommentRepository');
-const pool = require("../database/postgres/pool");
 
 class CommentRepositoryPostgres extends CommentsRepository {
     constructor(pool, idGenerator) {
@@ -21,37 +20,33 @@ class CommentRepositoryPostgres extends CommentsRepository {
 
         const result = await this._pool.query(query);
 
-        console.log("mytag "+JSON.stringify(result.rows[0]))
         return new Comments({ ...result.rows[0] });
     }
 
-    async getComment(commentId) {
-        this._verifyId(commentId)
+    async getComment(threadId, commentId) {
         const query = {
-            text: 'SELECT * FROM comments WHERE id = $1',
-            values: [commentId],
+            text: 'SELECT id, thread_id as "threadId", username, content, date FROM comments WHERE id = $1 and thread_id = $2',
+            values: [commentId, threadId],
         };
 
         const result = await this._pool.query(query);
 
-        console.log("mytag "+JSON.stringify(result.rows[0]))
-        return new Comments({ ...result.rows[0] });
-    }
-
-    async deleteComment(commentId) {
-        console.log('mytag4 '+commentId)
-
-    }
-
-    _verifyId(commentId) {
-        if (!commentId) {
-            throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
-        }
-
-        if (typeof commentId !== 'string') {
-            throw new Error('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+        if (result.rows.length > 0){
+            return new Comments({ ...result.rows[0] })
+        } else {
+            throw new InvariantError('komentar tidak ditemukan');
         }
     }
+
+    async deleteComment(threadId, commentId, username) {
+        const query = {
+            text: 'DELETE FROM comments WHERE id = $1 and thread_id = $2 and username = $3',
+            values: [commentId, threadId, username],
+        };
+
+        await this._pool.query(query);
+    }
+
 }
 
 module.exports = CommentRepositoryPostgres;

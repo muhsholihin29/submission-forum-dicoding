@@ -40,16 +40,45 @@ describe('AddCUseCase', () => {
             username: useCasePayload.username
         }));
     });
+
+    it('should throw error if use case payload not contain id', async () => {
+        // Arrange
+        /** creating dependency of use case */
+        const mockCommentRepository = new CommentRepository();
+
+        /** creating use case instance */
+        const commentUseCase = new CommentUseCase({
+            commentRepository: mockCommentRepository
+        });
+
+        // Action & Assert
+        await expect(commentUseCase.getComment())
+            .rejects
+            .toThrowError('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
+    });
+
+    it('should throw error if use case payload id not string', async () => {
+        // Arrange
+        /** creating dependency of use case */
+        const mockCommentRepository = new CommentRepository();
+
+        /** creating use case instance */
+        const commentUseCase = new CommentUseCase({
+            commentRepository: mockCommentRepository
+        });
+
+        // Action & Assert
+        await expect(commentUseCase.getComment(1, 6))
+            .rejects
+            .toThrowError('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+    });
 });
 
 describe('GetCommentUseCase', () => {
     it('should orchestrating the get comment action correctly', async () => {
         // Arrange
-        const useCasePayload = {
-            id: 'comment-123',
-        };
         const expectedComment = new Comment({
-            id: useCasePayload.id,
+            id: 'comment-123',
             content: 'dicoding',
             threadId: 'thread-123',
             username: 'user-123',
@@ -59,8 +88,6 @@ describe('GetCommentUseCase', () => {
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
-        mockCommentRepository.verifyAvailableCommentname = jest.fn()
-            .mockImplementation(() => Promise.resolve());
         mockCommentRepository.getComment = jest.fn()
             .mockImplementation(() => Promise.resolve(expectedComment));
 
@@ -70,25 +97,44 @@ describe('GetCommentUseCase', () => {
         });
 
         // Action
-        const registeredComment = await getCommentUseCase.getComment(useCasePayload);
+        const registeredComment = await getCommentUseCase.getComment('thread-123','comment-123');
 
         // Assert
         expect(registeredComment).toStrictEqual(expectedComment);
-        expect(mockCommentRepository.getComment).toBeCalledWith({
-            id: 'comment-123'
-        });
+        expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
     });
 });
 
 describe('Delete CommentUseCase', () => {
-    it('should throw error if use case payload not contain id', async () => {
+
+    it('should orchestrating the delete comment action correctly', async () => {
         // Arrange
-        const useCasePayload = 666;
         /** creating dependency of use case */
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
-        await mockCommentRepository.deleteComment() = jest.fn()
+        mockCommentRepository.deleteComment = jest.fn()
+            .mockImplementation(() => Promise.resolve());
+
+        /** creating use case instance */
+        const commentUseCase = new CommentUseCase({
+            commentRepository: mockCommentRepository
+        });
+
+        // Action
+        await expect(commentUseCase.deleteComment('thread-123', 'comment-123', 'dicoding'))
+
+        // Assert
+        expect(mockCommentRepository.deleteComment).toBeCalledWith('thread-123','comment-123', 'dicoding');
+    });
+
+    it('should throw error if use case payload not contain id', async () => {
+        // Arrange
+        /** creating dependency of use case */
+        const mockCommentRepository = new CommentRepository();
+
+        /** mocking needed function */
+        mockCommentRepository.deleteComment = jest.fn()
             .mockImplementation(() => Promise.resolve());
 
         /** creating use case instance */
@@ -97,8 +143,8 @@ describe('Delete CommentUseCase', () => {
         });
 
         // Action & Assert
-        await expect(commentUseCase.deleteComment('comment-123'))
+        await expect(commentUseCase.deleteComment())
             .rejects
-            .toThrowError('DELETE_AUTHENTICATION_USE_CASE.NOT_CONTAIN_REFRESH_TOKEN');
+            .toThrowError('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
     });
 });
