@@ -1,4 +1,4 @@
-const Thread = require('../../../Domains/threads/entities/Thread');
+const Thread = require('../../../Domains/threads/entities/AddThread');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const ThreadUseCase = require('../ThreadUseCase');
 

@@ -1,6 +1,6 @@
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const InvariantError = require('../../../Commons/exceptions/InvariantError');
-const Thread = require('../../../Domains/threads/entities/Thread');
+const Thread = require('../../../Domains/threads/entities/AddThread');
 const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 
@@ -46,12 +46,11 @@ describe('ThreadRepositoryPostgres', () => {
             const registeredThread = await userRepositoryPostgres.addThread(registerThread);
 
             // Assert
-            expect(registeredThread).toStrictEqual(new Thread({
+            expect(registeredThread).toStrictEqual({
                 id: 'user-123',
                 title: 'dicoding',
-                body: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                username: registerThread.username
-            }));
+                owner: registerThread.username
+            });
         });
     });
 
@@ -68,7 +67,7 @@ describe('ThreadRepositoryPostgres', () => {
             expect(threads.id).toEqual('thread-123');
         });
 
-        it('should return registered user correctly', async () => {
+        it('should return thread correctly', async () => {
             // Arrange
             const userRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 

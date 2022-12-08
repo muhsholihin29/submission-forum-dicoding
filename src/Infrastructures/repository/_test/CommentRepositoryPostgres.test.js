@@ -3,10 +3,12 @@ const InvariantError = require('../../../Commons/exceptions/InvariantError');
 const Comment = require('../../../Domains/comments/entities/Comment');
 const pool = require('../../database/postgres/pool');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
+const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
 
 describe('CommentRepositoryPostgres', () => {
     afterEach(async () => {
         await CommentsTableTestHelper.cleanTable();
+        await ThreadsTableTestHelper.cleanTable()
     });
 
     afterAll(async () => {
@@ -23,6 +25,7 @@ describe('CommentRepositoryPostgres', () => {
             });
             const fakeIdGenerator = () => '123'; // stub!
             const userRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
+            await ThreadsTableTestHelper.addThread({ id: addComment.threadId });
 
             // Action
             await userRepositoryPostgres.addComment(addComment);
@@ -32,7 +35,7 @@ describe('CommentRepositoryPostgres', () => {
             expect(threads).toHaveLength(1);
         });
 
-        it('should return added user correctly', async () => {
+        it('should return added comment correctly', async () => {
             // Arrange
             const addComment = new Comment({
                 content: 'dicoding',
@@ -41,17 +44,17 @@ describe('CommentRepositoryPostgres', () => {
             });
             const fakeIdGenerator = () => '123'; // stub!
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
+            await ThreadsTableTestHelper.addThread({ id: addComment.threadId });
 
             // Action
             const addedComment = await commentRepositoryPostgres.addComment(addComment);
 
             // Assert
-            expect(addedComment).toStrictEqual(new Comment({
+            expect(addedComment).toStrictEqual({
                 id: 'comment-123',
                 content: 'dicoding',
-                threadId: 'thread-123',
-                username: addComment.username
-            }));
+                owner: addComment.username
+            });
         });
     });
 
@@ -77,7 +80,7 @@ describe('CommentRepositoryPostgres', () => {
             // Assert
             expect(userId).toStrictEqual(new Comment({
                 id: 'comment-123',
-                username: 'secret',
+                username: 'dicoding',
                 content: 'Dicoding Indonesia',
                 threadId: 'thread-123'
             }));

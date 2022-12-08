@@ -1,4 +1,5 @@
 const pool = require('../../database/postgres/pool');
+const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const container = require('../../container');
 const createServer = require('../createServer');
@@ -11,6 +12,7 @@ describe('/comments endpoint', () => {
     });
 
     afterEach(async () => {
+        await ThreadsTableTestHelper.cleanTable();
         await CommentsTableTestHelper.cleanTable();
     });
 
@@ -23,7 +25,8 @@ describe('/comments endpoint', () => {
                 content: 'Dicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding Indonesia',
                 username: 'dicoding'
             };
-            // eslint-disable-next-line no-undef
+            await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
+
             const server = await createServer(container);
             // Action
             const response = await server.inject({
@@ -31,7 +34,7 @@ describe('/comments endpoint', () => {
                 url: '/threads/thread-123/comments',
                 payload: requestPayload,
                 headers: {
-                    access_token: accessToken
+                    'authorization': 'Bearer '+accessToken,
                 }
             });
 
@@ -40,7 +43,7 @@ describe('/comments endpoint', () => {
             const responseJson = JSON.parse(response.payload);
             expect(responseJson.status).toEqual('success');
             expect(response.statusCode).toEqual(201);
-            expect(responseJson.data.comment).toBeDefined();
+            expect(responseJson.data.addedComment).toBeDefined();
         });
 
         it('should response 400 when request payload not contain needed property', async () => {
@@ -54,7 +57,7 @@ describe('/comments endpoint', () => {
                 method: 'POST',
                 url: '/threads/thread-123/comments',
                 headers: {
-                    access_token: accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
                 payload: {
 
@@ -83,7 +86,7 @@ describe('/comments endpoint', () => {
                 url: '/threads/thread-123/comments',
                 payload: requestPayload,
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 
@@ -99,9 +102,10 @@ describe('/comments endpoint', () => {
 
     describe('when GET /comments', () => {
         it('should response 200 when get comment by id', async () => {
-            await CommentsTableTestHelper.addComment({ id: 'comment-123' });
             // Arrange
             const server = await createServer(container);
+            await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
+            await CommentsTableTestHelper.addComment({ id: 'comment-123', thread_id: 'thread-123' });
 
             // Action
             const response = await server.inject({
@@ -123,13 +127,15 @@ describe('/comments endpoint', () => {
             const server = await createServer(container);
             const jwtTokenManager = new JwtTokenManager(Jwt.token);
             const accessToken = await jwtTokenManager.createAccessToken({ username: 'dicoding' });
+            await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
+            await CommentsTableTestHelper.addComment({ id: 'comment-123', thread_id: 'thread-123' });
 
             // Action
             const response = await server.inject({
                 method: 'DELETE',
                 url: '/threads/thread-123/comments/comment-123',
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 

@@ -1,35 +1,62 @@
 const AuthenticationTokenManager = require('../../security/AuthenticationTokenManager');
 const ValidateAuthenticationUsecase = require('../ValidateAuthenticationUsecase');
+const AuthenticationError = require("../../../Commons/exceptions/AuthenticationError");
 
 describe('ValidateAuthenticationUseCase', () => {
     it('should throw error if use case payload not contain access token', async () => {
         // Arrange
-        const useCasePayload = {};
+        const headers = {};
         const validateAuthenticationUsecase = new ValidateAuthenticationUsecase({});
 
         // Action & Assert
-        await expect(validateAuthenticationUsecase.execute(useCasePayload))
+        await expect(validateAuthenticationUsecase.execute(headers))
             .rejects
-            .toThrowError('VALIDATE_AUTHENTICATION_USE_CASE.NOT_CONTAIN_ACCESS_TOKEN');
+            .toThrow(AuthenticationError);
     });
 
     it('should throw error if access token not string', async () => {
         // Arrange
-        const useCasePayload = {
-            access_token: 1,
+        const headers = {
+            authorization: 1,
         };
         const validateAuthenticationUsecase = new ValidateAuthenticationUsecase({});
 
         // Action & Assert
-        await expect(validateAuthenticationUsecase.execute(useCasePayload))
+        await expect(validateAuthenticationUsecase.execute(headers))
             .rejects
-            .toThrowError('VALIDATE_AUTHENTICATION_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION');
+            .toThrow(AuthenticationError);
+    });
+
+    it('should throw error if access token not contain bearer', async () => {
+        // Arrange
+        const headers = {
+            authorization: 'access token',
+        };
+        const validateAuthenticationUsecase = new ValidateAuthenticationUsecase({});
+
+        // Action & Assert
+        await expect(validateAuthenticationUsecase.execute(headers))
+            .rejects
+            .toThrow(AuthenticationError);
+    });
+
+    it('should throw error if access token not valid', async () => {
+        // Arrange
+        const headers = {
+            authorization: 'Bearer',
+        };
+        const validateAuthenticationUsecase = new ValidateAuthenticationUsecase({});
+
+        // Action & Assert
+        await expect(validateAuthenticationUsecase.execute(headers))
+            .rejects
+            .toThrow(AuthenticationError);
     });
 
     it('should orchestrating the validation authentication action correctly', async () => {
         // Arrange
-        const useCasePayload = {
-            access_token: 'some_refresh_token',
+        const headers = {
+            authorization: 'Bearer some_refresh_token',
         };
 
         const mockAuthenticationTokenManager = new AuthenticationTokenManager();
@@ -42,12 +69,12 @@ describe('ValidateAuthenticationUseCase', () => {
         });
 
         // Action
-        const accessToken = await validateAuthenticationUsecase.execute(useCasePayload);
+        const data = await validateAuthenticationUsecase.execute(headers);
 
         // Assert
 
         expect(mockAuthenticationTokenManager.decodePayload)
-            .toBeCalledWith(useCasePayload.access_token);
-        expect(accessToken).toEqual(JSON.parse('{"id": "user-123", "username": "dicoding"}'));
+            .toBeCalledWith(headers.authorization.split(' ')[1]);
+        expect(data).toEqual(JSON.parse('{"id": "user-123", "username": "dicoding"}'));
     });
 });

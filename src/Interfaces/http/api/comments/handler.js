@@ -16,12 +16,12 @@ class CommentsHandler {
         request.payload.username = validationData.username;
         const commentUseCase = this._container.getInstance(CommentUseCase.name);
         request.payload.threadId = request.params.threadId
-        const comment = await commentUseCase.addComment(request.payload);
+        const addedComment = await commentUseCase.addComment(request.payload);
 
         const response = h.response({
             status: 'success',
             data: {
-                comment,
+                addedComment,
             },
         });
         response.code(201);
@@ -31,8 +31,8 @@ class CommentsHandler {
     async getCommentHandler(request, h) {
         const commentUseCase = this._container.getInstance(CommentUseCase.name);
         const comment = await commentUseCase.getComment(
-            request.params.threadId,
-            request.params.commentId
+            request.params.threadId || 0,
+            request.params.commentId || 0
         );
 
         const response = h.response({

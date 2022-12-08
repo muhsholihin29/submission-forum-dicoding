@@ -1,4 +1,4 @@
-const Thread = require('../../../threads/entities/Thread');
+const Thread = require('../../../threads/entities/AddThread');
 const Comment = require("../../../comments/entities/Comment");
 
 describe('a Thread entities', () => {
@@ -28,7 +28,7 @@ describe('a Thread entities', () => {
         // Arrange
         const payload = {
             title: 'dicoding indonesia',
-            body: 'dicodingindonesiadicodingindonesiadicoding',
+            body: 'dicoding',
             username: 'user-123',
         };
         // Action and Assert

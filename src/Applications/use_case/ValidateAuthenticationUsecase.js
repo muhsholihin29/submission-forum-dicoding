@@ -1,3 +1,5 @@
+const AuthenticationError = require("../../Commons/exceptions/AuthenticationError");
+
 class ValidateAuthenticationUsecase {
     constructor({
                     authenticationTokenManager,
@@ -5,22 +7,27 @@ class ValidateAuthenticationUsecase {
         this._authenticationTokenManager = authenticationTokenManager;
     }
 
-    async execute(useCasePayload) {
-        this._verifyPayload(useCasePayload);
-        const { access_token } = useCasePayload;
+    async execute(headers) {
+        this._verifyPayload(headers);
+        const { authorization } = headers;
 
-        return  await this._authenticationTokenManager.decodePayload(access_token);
+        return  await this._authenticationTokenManager.decodePayload(authorization.split(' ')[1]);
     }
 
-    _verifyPayload(payload) {
-        const { access_token } = payload;
+    _verifyPayload(headers) {
+        const { authorization } = headers;
 
-        if (!access_token) {
-            throw new Error('VALIDATE_AUTHENTICATION_USE_CASE.NOT_CONTAIN_ACCESS_TOKEN');
+        if (!authorization){
+            throw new AuthenticationError('Missing authentication');
         }
-
-        if (typeof access_token !== 'string') {
-            throw new Error('VALIDATE_AUTHENTICATION_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION');
+        if (typeof authorization !== 'string') {
+            throw new AuthenticationError('Missing authentication');
+        }
+        if (authorization.split(' ').length !== 2){
+            throw new AuthenticationError('Missing authentication');
+        }
+        if (authorization.split(' ')[0] === 'Bearer') {} else {
+            throw new AuthenticationError('Missing authentication');
         }
     }
 }

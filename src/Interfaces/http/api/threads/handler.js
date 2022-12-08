@@ -10,32 +10,38 @@ class ThreadsHandler {
     }
 
     async postThreadHandler(request, h) {
-        const validateAuthenticationUsecase = this._container.getInstance(ValidateAuthenticationUsecase.name);
-        const threadUseCase = this._container.getInstance(ThreadUseCase.name);
-        const validationData = await validateAuthenticationUsecase.execute(request.headers);
-        request.payload.username = validationData.username;
-        const addedUser = await threadUseCase.addThread(request.payload);
+        try {
+            const validateAuthenticationUsecase = this._container.getInstance(ValidateAuthenticationUsecase.name);
+            const threadUseCase = this._container.getInstance(ThreadUseCase.name);
+            const validationData = await validateAuthenticationUsecase.execute(request.headers);
+            request.payload.username = validationData.username;
+            const addedThread = await threadUseCase.addThread(request.payload);
 
-        const response = h.response({
-            status: 'success',
-            data: {
-                addedUser,
-            },
-        });
-        response.code(201);
-        return response;
+            const response = h.response({
+                status: 'success',
+                data: {
+                    addedThread,
+                },
+            });
+            response.code(201);
+            return response;
+        }
+        catch (e) {
+            console.log(e)
+            return e
+        }
     }
 
     async getThreadHandler(request, h) {
         const threadUseCase = this._container.getInstance(ThreadUseCase.name);
-        const addedUser = await threadUseCase.getThread(
+        const thread = await threadUseCase.getThread(
             request.params.id
         );
 
         const response = h.response({
             status: 'success',
             data: {
-                addedUser,
+                thread,
             },
         });
         response.code(200);

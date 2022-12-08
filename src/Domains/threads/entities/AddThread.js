@@ -1,4 +1,4 @@
-class Thread {
+class AddThread {
     constructor(payload) {
         this._verifyPayload(payload)
 
@@ -19,10 +19,10 @@ class Thread {
             throw new Error('THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
 
-        if (body.length < 50) {
+        if (body.length < 10) {
             throw new Error('THREAD.BODY_MINIMUM_CHAR');
         }
     }
 }
 
-module.exports = Thread;
+module.exports = AddThread;

@@ -15,7 +15,7 @@ describe('/threads endpoint', () => {
     });
 
     describe('when POST /threads', () => {
-        it('should response 201 and persisted user', async () => {
+        it('should response 201 and persisted thread', async () => {
             // Arrange
             const jwtTokenManager = new JwtTokenManager(Jwt.token);
             const accessToken = await jwtTokenManager.createAccessToken({ username: 'dicoding' });
@@ -31,7 +31,7 @@ describe('/threads endpoint', () => {
                 url: '/threads',
                 payload: requestPayload,
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 
@@ -40,7 +40,7 @@ describe('/threads endpoint', () => {
             const responseJson = JSON.parse(response.payload);
             expect(responseJson.status).toEqual('success');
             expect(response.statusCode).toEqual(201);
-            expect(responseJson.data.addedUser).toBeDefined();
+            expect(responseJson.data.addedThread).toBeDefined();
         });
 
         it('should response 400 when request payload not contain needed property', async () => {
@@ -58,7 +58,7 @@ describe('/threads endpoint', () => {
                 url: '/threads',
                 payload: requestPayload,
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 
@@ -85,7 +85,7 @@ describe('/threads endpoint', () => {
                 url: '/threads',
                 payload: requestPayload,
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 
@@ -112,7 +112,7 @@ describe('/threads endpoint', () => {
                 url: '/threads',
                 payload: requestPayload,
                 headers: {
-                    'access_token': accessToken,
+                    'authorization': 'Bearer '+accessToken,
                 },
             });
 
