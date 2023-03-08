@@ -1,4 +1,4 @@
-const Comment = require('../../Domains/comments/entities/Comment');
+const AddComment = require("../../Domains/comments/entities/AddComment");
 
 class CommentUseCase {
     constructor({ commentRepository }) {
@@ -6,30 +6,43 @@ class CommentUseCase {
     }
 
     addComment(useCasePayload) {
-        const comment = new Comment(useCasePayload);
+        const comment = new AddComment(useCasePayload);
         return this._commentRepository.addComment(comment);
     }
 
+    async getCommentsByThreadId(threadId) {
+        this._validateString(threadId);
+        return this._commentRepository.getCommentsByThreadId(threadId);
+    }
+
     async getComment(threadId, commentId) {
-        this._verifyId(threadId, commentId);
+        this._validateString(threadId);
+        this._validateString(commentId);
         return this._commentRepository.getComment(threadId, commentId);
     }
 
-    async deleteComment(threadId, commentId, username) {
-        this._verifyId(threadId, commentId, username)
-        return this._commentRepository.deleteComment(threadId, commentId, username);
+    async verifyCommentOwner(commentId, userId) {
+        this._validateString(commentId);
+        this._validateString(userId);
+        return this._commentRepository.verifyCommentOwner(commentId, userId);
     }
 
-    _verifyId(threadId, commentId) {
-        if (!threadId || !commentId) {
+    async deleteComment(threadId, commentId, userId) {
+        this._validateString(threadId);
+        this._validateString(commentId);
+        this._validateString(userId);
+        return this._commentRepository.deleteComment(threadId, commentId, userId);
+    }
+
+    _validateString(text) {
+        if (!text) {
             throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
         }
 
-        if (typeof commentId !== 'string' || typeof threadId !== 'string') {
+        if (typeof text !== 'string') {
             throw new Error('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
     }
-
 }
 
 module.exports = CommentUseCase;

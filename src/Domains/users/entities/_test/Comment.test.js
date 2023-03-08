@@ -14,9 +14,10 @@ describe('a Comment entities', () => {
     it('should throw error when payload did not meet data type specification', () => {
         // Arrange
         const payload = {
+            id: 'comment-123',
             content: 123,
-            threadId: 'thread-123',
-            username: 'user-123'
+            date: '2022-12-31T17:00:00.000Z',
+            username: 'dicoding'
         };
         // Action and Assert
         expect(() => new Comment(payload)).toThrowError('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
@@ -25,15 +26,16 @@ describe('a Comment entities', () => {
     it('should create comment object correctly', () => {
         // Arrange
         const payload = {
-            content: 'dicoding',
-            threadId: 'thread-123',
-            username: 'user-123'
+            id: 'comment-123',
+            content: 'content',
+            date: '2022-12-31T17:00:00.000Z',
+            username: 'dicoding'
         };
         // Action
-        const { content, threadId, username} = new Comment(payload);
+        const { content, date, username} = new Comment(payload);
         // Assert
         expect(content).toEqual(payload.content);
-        expect(threadId).toEqual(payload.threadId);
+        expect(date).toEqual(payload.date);
         expect(username).toEqual(payload.username);
     });
 });

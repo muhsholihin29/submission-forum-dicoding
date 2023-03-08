@@ -12,64 +12,71 @@ class CommentRepositoryPostgres extends CommentsRepository {
     }
 
     async addComment(comment) {
-        const { content, threadId, username } = comment;
+        const {content, threadId, userId} = comment;
         const id = `comment-${this._idGenerator()}`;
 
-        const queryCheckThread = {
-            text: 'SELECT * FROM threads WHERE id = $1',
-            values: [threadId],
+        const query = {
+            text: 'INSERT INTO comments VALUES($1, $2, $3, $4, now(), false) RETURNING id, content, user_id as owner',
+            values: [id, threadId, userId, content],
         };
 
-        const resultCheckThread = await this._pool.query(queryCheckThread);
+        const result = await this._pool.query(query);
 
-        if (resultCheckThread.rows.length > 0) {
-            const query = {
-                text: 'INSERT INTO comments VALUES($1, $2, $3, $4, now()) RETURNING id, content, username as owner',
-                values: [id, threadId, username, content],
-            };
-
-            const result = await this._pool.query(query);
-
-            return JSON.parse(JSON.stringify(result.rows[0]));
-        } else {
-            throw new NotFoundError('Thread tidak ditemukan');
+        if (!result.rowCount) {
+            throw new InvariantError('Gagal menambahkan komentar');
         }
+
+        return result.rows[0];
     }
 
     async getComment(threadId, commentId) {
         const query = {
-            text: 'SELECT id, thread_id as "threadId", username, content, date FROM comments WHERE id = $1 and thread_id = $2 and is_delete = 0',
+            text: 'SELECT comments.id, u.username, content, date FROM comments join users u on comments.user_id = u.id WHERE comments.id = $1 and thread_id = $2 and is_delete = false order by date asc ',
             values: [commentId, threadId],
         };
 
         const result = await this._pool.query(query);
 
-        if (result.rows.length > 0){
-            return new Comments({ ...result.rows[0] })
-        } else {
-            throw new InvariantError('komentar tidak ditemukan');
+        if (!result.rowCount) {
+            throw new NotFoundError('komentar tidak ditemukan');
+        }
+        return new Comments({...result.rows[0]})
+    }
+
+    async getCommentsByThreadId(threadId) {
+        const query = {
+            text: `SELECT c.id, u.username, date, (case when is_delete then '**komentar telah dihapus**' else content end) as content FROM comments c join users u on u.id = c.user_id WHERE thread_id = $1 order by date`,
+            values: [threadId],
+        };
+
+        const result = await this._pool.query(query);
+
+        return result.rows;
+    }
+
+    async verifyCommentOwner(commentId, userId) {
+        const queryCheckComment = {
+            text: 'SELECT user_id FROM comments WHERE id = $1 and is_delete = false',
+            values: [commentId],
+        };
+        const resultCheckComment = await this._pool.query(queryCheckComment);
+        if (!resultCheckComment.rowCount) {
+            throw new NotFoundError('komentar v tidak ditemukan');
+        }
+        if (resultCheckComment.rows[0].user_id !== userId) {
+            throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
         }
     }
 
-    async deleteComment(threadId, commentId, username) {
-        const queryCheckComment = {
-            text: 'SELECT username FROM comments WHERE id = $1 and thread_id = $2 and is_delete = 0',
-            values: [commentId, threadId],
+    async deleteComment(threadId, commentId, userId) {
+        const query = {
+            text: 'UPDATE comments set is_delete = true WHERE id = $1 and thread_id = $2 and user_id = $3',
+            values: [commentId, threadId, userId],
         };
-        const resultCheckComment = await this._pool.query(queryCheckComment);
-        if (resultCheckComment.rows.length > 0) {
-            if (resultCheckComment.rows[0].username !== username) {
-                throw new AuthorizationError('Missing Authentication');
-            }
 
-            const query = {
-                text: 'UPDATE comments set is_delete = 1 WHERE id = $1 and thread_id = $2 and username = $3',
-                values: [commentId, threadId, username],
-            };
-
-            await this._pool.query(query);
-        } else {
-            throw new NotFoundError('komentar tidak ditemukan');
+        const result = await this._pool.query(query);
+        if (!result.rowCount) {
+            throw new NotFoundError('Komentar gagal dihapus. Id tidak ditemukan');
         }
     }
 

@@ -9,7 +9,7 @@ exports.up = (pgm) => {
             type: 'VARCHAR(50)',
             notNull: true,
         },
-        username: {
+        user_id: {
             type: 'VARCHAR(50)',
             notNull: true,
         },
@@ -19,6 +19,10 @@ exports.up = (pgm) => {
         },
         date: {
             type: 'DATE',
+            notNull: true,
+        },
+        is_delete: {
+            type: 'BOOLEAN',
             notNull: true,
         },
     });

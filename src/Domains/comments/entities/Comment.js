@@ -2,19 +2,20 @@ class Comment {
     constructor(payload) {
         this._verifyPayload(payload)
 
-        const { content, threadId, username } = payload
+        const { id, content, date, username } = payload
 
+        this.id = id
         this.content = content;
-        this.threadId = threadId;
+        this.date = `${date}`;
         this.username = username;
     }
 
-    _verifyPayload({ content, threadId, username }) {
-        if (!content || !threadId || !username) {
-            throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
+    _verifyPayload({ id, content, date, username }) {
+        if (!id || !content || !date || !username) {
+            throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY2');
         }
 
-        if (typeof content !== 'string' || typeof threadId !== 'string' || typeof username !== 'string') {
+        if (typeof id !== 'string' || typeof content !== 'string' || typeof username !== 'string') {
             throw new Error('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
     }

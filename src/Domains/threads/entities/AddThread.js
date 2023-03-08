@@ -2,20 +2,18 @@ class AddThread {
     constructor(payload) {
         this._verifyPayload(payload)
 
-        const { title, body, username, id = '' } = payload;
+        const { title, body} = payload;
 
-        this.username = username
         this.title = title;
         this.body = body;
-        this.id = id
     }
 
-    _verifyPayload({ title, body, username }) {
-        if (!title || !body || !username) {
+    _verifyPayload({ title, body}) {
+        if (!title || !body) {
             throw new Error('THREAD.NOT_CONTAIN_NEEDED_PROPERTY');
         }
 
-        if (typeof title !== 'string' || typeof body !== 'string' || typeof username !== 'string') {
+        if (typeof title !== 'string' || typeof body !== 'string') {
             throw new Error('THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
         }
 

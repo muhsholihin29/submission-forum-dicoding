@@ -1,6 +1,6 @@
-const InvariantError = require('../../Commons/exceptions/InvariantError');
 const ThreadsRepository = require('../../Domains/threads/ThreadRepository');
-const Thread = require("../../Domains/threads/entities/AddThread");
+const NotFoundError = require("../../Commons/exceptions/NotFoundError");
+const InvariantError = require("../../Commons/exceptions/InvariantError");
 
 class ThreadRepositoryPostgres extends ThreadsRepository {
     constructor(pool, idGenerator) {
@@ -9,47 +9,36 @@ class ThreadRepositoryPostgres extends ThreadsRepository {
         this._idGenerator = idGenerator;
     }
 
-    async addThread(registerThreads) {
-        const { username, title, body } = registerThreads;
-        const id = `user-${this._idGenerator()}`;
+    async addThread(userId, thread) {
+        const { title, body } = thread;
+        const id = `thread-${this._idGenerator()}`;
 
         const query = {
-            text: 'INSERT INTO threads VALUES($1, $2, $3, $4, NOW()) RETURNING id, title, username as owner',
-            values: [id, username, title, body],
+            text: 'INSERT INTO threads VALUES($1, $2, $3, $4, NOW()) RETURNING id, title, user_id as owner',
+            values: [id, userId, title, body],
         };
 
         const result = await this._pool.query(query);
 
-        return JSON.parse(JSON.stringify(result.rows[0]));
+        if (!result.rowCount) {
+            throw new InvariantError('Gagal menambahkan thread');
+        }
+
+        return result.rows[0];
     }
 
-    async getThread(thread_id) {
-
+    async getThreadById(threadId) {
         const queryThread = {
-            text: 'SELECT * FROM threads WHERE id = $1',
-            values: [thread_id],
+            text: 'SELECT t.id, t.title, t.body, t.date, u.username FROM threads t join users u on u.id = t.user_id WHERE t.id = $1',
+            values: [threadId],
         };
-
-        const queryComments = {
-            text: 'SELECT id, username, date, content, is_delete FROM comments WHERE thread_id = $1',
-            values: [thread_id],
-        };
-
         const resultThread = await this._pool.query(queryThread);
-        const resultComment = await this._pool.query(queryComments);
 
-        if (resultThread.rows.length > 0) {
-            resultComment.rows.forEach((item, index) => {
-                if (item.is_delete === 1) {
-                    item.content = '**komentar telah dihapus**'
-                }
-                delete item.is_delete;
-            });
-            resultThread.rows[0].comments = resultComment.rows
-            return JSON.parse(JSON.stringify(resultThread.rows[0]));
-        } else {
-            throw new InvariantError('thread tidak ditemukan');
+        if (!resultThread.rowCount) {
+            throw new NotFoundError('thread tidak ditemukan');
         }
+
+        return resultThread.rows[0]
     }
 }
 

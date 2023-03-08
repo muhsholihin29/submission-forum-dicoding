@@ -1,4 +1,6 @@
 const createServer = require('../createServer');
+const JwtTokenManager = require("../../security/JwtTokenManager");
+const Jwt = require("@hapi/jwt");
 
 describe('HTTP server', () => {
     it('should response 404 when request unregistered route', async () => {
@@ -35,11 +37,11 @@ describe('HTTP server', () => {
 
     it('should handle server error correctly', async () => {
         // Arrange
+        const jwtTokenManager = new JwtTokenManager(Jwt.token);
+        const accessToken = await jwtTokenManager.createAccessToken({ id: 'user-123', username: 'dicoding' });
         const requestPayload = {
             title: 'dicoding',
             body: 'Dicoding Indonesia',
-            username: 'super_secret',
-            accessToken: 'some-access'
         };
         const server = await createServer({}); // fake injection
 
@@ -48,6 +50,9 @@ describe('HTTP server', () => {
             method: 'POST',
             url: '/threads',
             payload: requestPayload,
+            headers: {
+                'authorization': 'Bearer '+accessToken,
+            },
         });
 
         // Assert

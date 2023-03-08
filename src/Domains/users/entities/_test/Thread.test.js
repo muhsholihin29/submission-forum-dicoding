@@ -1,16 +1,15 @@
-const Thread = require('../../../threads/entities/AddThread');
-const Comment = require("../../../comments/entities/Comment");
+const AddThread = require('../../../threads/entities/AddThread');
+const AddedThread = require('../../../threads/entities/AddedThread');
 
 describe('a Thread entities', () => {
     it('should throw error when payload did not contain needed property', () => {
         // Arrange
         const payload = {
             title: 'abc',
-            body: 'abc',
         };
 
         // Action and Assert
-        expect(() => new Thread(payload)).toThrowError('THREAD.NOT_CONTAIN_NEEDED_PROPERTY');
+        expect(() => new AddThread(payload)).toThrowError('THREAD.NOT_CONTAIN_NEEDED_PROPERTY');
     });
 
     it('should throw error when payload did not meet data type specification', () => {
@@ -18,10 +17,10 @@ describe('a Thread entities', () => {
         const payload = {
             title: 123,
             body: 'aabc',
-            username: 'abcd'
+            userId: 'abcd'
         };
         // Action and Assert
-        expect(() => new Thread(payload)).toThrowError('THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
+        expect(() => new AddThread(payload)).toThrowError('THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
     });
 
     it('should throw error when body contains less than 50 character', () => {
@@ -29,25 +28,25 @@ describe('a Thread entities', () => {
         const payload = {
             title: 'dicoding indonesia',
             body: 'dicoding',
-            username: 'user-123',
+            userId: 'user-123',
         };
         // Action and Assert
-        expect(() => new Thread(payload)).toThrowError('THREAD.BODY_MINIMUM_CHAR');
+        expect(() => new AddThread(payload)).toThrowError('THREAD.BODY_MINIMUM_CHAR');
     });
 
     it('should create thread object correctly', () => {
         // Arrange
         const payload = {
             title: 'dicoding',
-            body: 'dicodingindonesiadicodingindonesiadicodingdicodingindonesiadicodingindonesiadicoding',
-            username: 'user-123',
+            id: 'thread-124',
+            owner: 'user-123',
         };
         // Action
-        const { title, body, username } = new Thread(payload);
+        const { title, id, owner } = new AddedThread(payload);
         // Assert
         expect(title).toEqual(payload.title);
-        expect(body).toEqual(payload.body);
-        expect(username).toEqual(payload.username);
+        expect(id).toEqual(payload.id);
+        expect(owner).toEqual(payload.owner);
     });
 
 });

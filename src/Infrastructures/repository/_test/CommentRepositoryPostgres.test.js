@@ -1,14 +1,17 @@
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
-const InvariantError = require('../../../Commons/exceptions/InvariantError');
 const Comment = require('../../../Domains/comments/entities/Comment');
 const pool = require('../../database/postgres/pool');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
+const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
+const AddComment = require("../../../Domains/comments/entities/AddComment");
+const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
 
 describe('CommentRepositoryPostgres', () => {
     afterEach(async () => {
         await CommentsTableTestHelper.cleanTable();
         await ThreadsTableTestHelper.cleanTable()
+        await UsersTableTestHelper.cleanTable();
     });
 
     afterAll(async () => {
@@ -18,10 +21,10 @@ describe('CommentRepositoryPostgres', () => {
     describe('addComment function', () => {
         it('should persist add comment', async () => {
             // Arrange
-            const addComment = new Comment({
+            const addComment = new AddComment({
                 content: 'dicoding',
                 threadId: 'thread-123',
-                username: 'user-123',
+                userId: 'user-123',
             });
             const fakeIdGenerator = () => '123'; // stub!
             const userRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
@@ -37,10 +40,10 @@ describe('CommentRepositoryPostgres', () => {
 
         it('should return added comment correctly', async () => {
             // Arrange
-            const addComment = new Comment({
+            const addComment = new AddComment({
                 content: 'dicoding',
                 threadId: 'thread-123',
-                username: 'user-123',
+                userId: 'user-123',
             });
             const fakeIdGenerator = () => '123'; // stub!
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
@@ -53,36 +56,37 @@ describe('CommentRepositoryPostgres', () => {
             expect(addedComment).toStrictEqual({
                 id: 'comment-123',
                 content: 'dicoding',
-                owner: addComment.username
+                owner: addComment.userId
             });
         });
     });
 
     describe('getComment', () => {
-        it('should throw InvariantError when comment not found', async () => {
+        it('should throw NotFoundError when comment not found', async () => {
             // Arrange
             const userRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
             // Action & Assert
             await expect(userRepositoryPostgres.getComment('thread-123', 'comment-123'))
                 .rejects
-                .toThrowError(InvariantError);
+                .toThrowError(NotFoundError);
         });
 
         it('should return user id correctly', async () => {
             // Arrange
+            await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
             await CommentsTableTestHelper.addComment({ id: 'comment-123', thread_id: 'thread-123' });
             const userRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
             // Action
-            const userId = await userRepositoryPostgres.getComment('thread-123', 'comment-123');
+            const comment = await userRepositoryPostgres.getComment('thread-123', 'comment-123');
 
             // Assert
-            expect(userId).toStrictEqual(new Comment({
+            expect(comment).toStrictEqual(new Comment({
                 id: 'comment-123',
-                username: 'dicoding',
                 content: 'Dicoding Indonesia',
-                threadId: 'thread-123'
+                date: "Sun Jan 01 2023 00:00:00 GMT+0700 (Western Indonesia Time)",
+                username: 'dicoding'
             }));
         });
     });
@@ -93,11 +97,12 @@ describe('CommentRepositoryPostgres', () => {
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);
             const commentId = 'comment-123';
             const threadId = 'thread-123';
-            const username = 'dicoding'
-            await CommentsTableTestHelper.addComment({ id: commentId, thread_id: threadId, username });
+            const userId = 'dicoding'
+            await ThreadsTableTestHelper.addThread({ id: threadId });
+            await CommentsTableTestHelper.addComment({ id: commentId, thread_id: threadId, userId });
 
             // Action
-            await commentRepositoryPostgres.deleteComment(threadId, commentId, username);
+            await commentRepositoryPostgres.deleteComment(threadId, commentId, userId);
 
             // Assert
             const comments = await CommentsTableTestHelper.getComment(threadId, commentId);

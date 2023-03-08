@@ -32,6 +32,9 @@ describe('/users endpoint', () => {
 
       // Assert
       const responseJson = JSON.parse(response.payload);
+
+      // expect(JSON.parse(response.payload)).toEqual(201);
+
       expect(response.statusCode).toEqual(201);
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedUser).toBeDefined();
@@ -130,7 +133,7 @@ describe('/users endpoint', () => {
 
     it('should response 400 when username unavailable', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ username: 'dicoding' });
+      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
       const requestPayload = {
         username: 'dicoding',
         fullname: 'Dicoding Indonesia',

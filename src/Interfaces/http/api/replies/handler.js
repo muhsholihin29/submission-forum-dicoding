@@ -1,66 +1,59 @@
-const CommentUseCase = require('../../../../Applications/use_case/CommentUseCase');
+const ReplyUseCase = require('../../../../Applications/use_case/ReplyUseCase');
 const ThreadUseCase = require("../../../../Applications/use_case/ThreadUseCase");
+const CommentUseCase = require("../../../../Applications/use_case/CommentUseCase");
 
-class CommentsHandler {
+class RepliesHandler {
     constructor(container) {
         this._container = container;
     }
 
-    async postCommentHandler(request, h) {
+    async postReplyHandler(request, h) {
         const {id: userId} = request.auth.credentials;
-
-        request.payload.userId = userId;
+        const replyUseCase = this._container.getInstance(ReplyUseCase.name);
         const threadUseCase = this._container.getInstance(ThreadUseCase.name);
         const commentUseCase = this._container.getInstance(CommentUseCase.name);
         await threadUseCase.getThread(request.params.threadId);
-        request.payload.threadId = request.params.threadId
-        const addedComment = await commentUseCase.addComment(request.payload);
+        await commentUseCase.getComment(
+            request.params.threadId,
+            request.params.commentId
+        );
+        const addedReply = await replyUseCase.addReply(
+            userId,
+            request.params.threadId,
+            request.params.commentId,
+            request.payload.content);
 
         const response = h.response({
             status: 'success',
             data: {
-                addedComment,
+                addedReply,
             },
         });
         response.code(201);
         return response;
     }
 
-    async getCommentHandler(request, h) {
-        const commentUseCase = this._container.getInstance(CommentUseCase.name);
-        const comment = await commentUseCase.getComment(
-            request.params.threadId,
-            request.params.commentId
-        );
-
-        const response = h.response({
-            status: 'success',
-            data: {
-                comment,
-            },
-        });
-        response.code(200);
-        return response;
-    }
-
-    async deleteCommentHandler(request, h) {
+    async deleteReplyHandler(request, h) {
         const {id: userId} = request.auth.credentials;
+        const replyUseCase = this._container.getInstance(ReplyUseCase.name);
         const threadUseCase = this._container.getInstance(ThreadUseCase.name);
         const commentUseCase = this._container.getInstance(CommentUseCase.name);
         await threadUseCase.getThread(request.params.threadId);
-        await commentUseCase.verifyCommentOwner(
-            request.params.commentId,
-            userId
-        );
         await commentUseCase.getComment(
             request.params.threadId,
             request.params.commentId
         );
-
-        await commentUseCase.deleteComment(
+        await replyUseCase.getReply(
             request.params.threadId,
             request.params.commentId,
+            request.params.replyId,
+        );
+        await replyUseCase.verifyReplyOwner(
+            request.params.replyId,
             userId
+        )
+        await replyUseCase.deleteReply(
+            request.params.replyId,
         );
 
         const response = h.response({
@@ -72,4 +65,4 @@ class CommentsHandler {
 
 }
 
-module.exports = CommentsHandler;
+module.exports = RepliesHandler;

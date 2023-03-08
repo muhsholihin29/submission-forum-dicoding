@@ -2,17 +2,23 @@ const routes = (handler) => ([
     {
         method: 'POST',
         path: '/threads/{threadId}/comments',
-        handler: handler.postCommentHandler,
+        handler: (request, h) => handler.postCommentHandler(request, h),
+        options: {
+            auth: 'forum_jwt',
+        },
     },
     {
         method: 'GET',
         path: '/threads/{threadId}/comments/{commentId}',
-        handler: handler.getCommentHandler,
+        handler: (request, h) => handler.getCommentHandler(request, h),
     },
     {
         method: 'DELETE',
         path: '/threads/{threadId}/comments/{commentId}',
-        handler: handler.deleteCommentHandler,
+        handler: (request, h) => handler.deleteCommentHandler(request, h),
+        options: {
+            auth: 'forum_jwt',
+        },
     }
 ]);
 

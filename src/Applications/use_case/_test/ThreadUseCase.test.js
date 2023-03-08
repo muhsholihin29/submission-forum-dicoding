@@ -1,20 +1,20 @@
-const Thread = require('../../../Domains/threads/entities/AddThread');
+const AddThread = require('../../../Domains/threads/entities/AddThread');
+const AddedThread = require('../../../Domains/threads/entities/AddedThread');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const ThreadUseCase = require('../ThreadUseCase');
 
 describe('AddThreadUseCase', () => {
     it('should orchestrating the add thread action correctly', async () => {
         // Arrange
-        const useCasePayload = {
+        const userId = 'user-123';
+        const payload = {
             title: 'dicoding',
             body: 'dicodingdicodingaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccc',
-            username: 'user-123',
         };
-        const expectedThread = new Thread({
+        const expectedThread = new AddedThread({
             id: 'thread-123',
-            title: useCasePayload.title,
-            body: useCasePayload.body,
-            username: useCasePayload.username,
+            title: payload.title,
+            owner: userId,
         });
 
         /** creating dependency of use case */
@@ -22,7 +22,11 @@ describe('AddThreadUseCase', () => {
 
         /** mocking needed function */
         mockThreadRepository.addThread = jest.fn()
-            .mockImplementation(() => Promise.resolve(expectedThread));
+            .mockImplementation(() => Promise.resolve(new AddedThread({
+                id: 'thread-123',
+                title: payload.title,
+                owner: userId,
+            })));
 
         /** creating use case instance */
         const getThreadUseCase = new ThreadUseCase({
@@ -30,14 +34,13 @@ describe('AddThreadUseCase', () => {
         });
 
         // Action
-        const registeredThread = await getThreadUseCase.addThread(useCasePayload);
+        const addedThread = await getThreadUseCase.addThread(userId, payload);
 
         // Assert
-        expect(registeredThread).toStrictEqual(expectedThread);
-        expect(mockThreadRepository.addThread).toBeCalledWith(new Thread({
-            title: useCasePayload.title,
-            body: useCasePayload.body,
-            username: useCasePayload.username
+        expect(addedThread).toStrictEqual(expectedThread);
+        expect(mockThreadRepository.addThread).toBeCalledWith(userId, new AddThread({
+            title: payload.title,
+            body: payload.body,
         }));
     });
 });
@@ -45,21 +48,27 @@ describe('AddThreadUseCase', () => {
 describe('GetThreadUseCase', () => {
     it('should orchestrating the get thread action correctly', async () => {
         // Arrange
-        const expectedThread = new Thread({
+        const expectedThread = {
             id:  'thread-123',
             body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
             title: 'judul',
-            username: 'user-123'
-        });
+            date: 'date',
+            userId: 'user-123'
+        };
+
 
         /** creating dependency of use case */
         const mockThreadRepository = new ThreadRepository();
 
         /** mocking needed function */
-        mockThreadRepository.verifyAvailableThreadname = jest.fn()
-            .mockImplementation(() => Promise.resolve());
-        mockThreadRepository.getThread = jest.fn()
-            .mockImplementation(() => Promise.resolve(expectedThread));
+        mockThreadRepository.getThreadById = jest.fn()
+            .mockImplementation(() => Promise.resolve({
+                id:  'thread-123',
+                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
+                title: 'judul',
+                date: 'date',
+                userId: 'user-123'
+            }));
 
         /** creating use case instance */
         const getThreadUseCase = new ThreadUseCase({
@@ -67,10 +76,10 @@ describe('GetThreadUseCase', () => {
         });
 
         // Action
-        const registeredThread = await getThreadUseCase.getThread( 'thread-123');
+        const addedThread = await getThreadUseCase.getThread( 'thread-123');
 
         // Assert
-        expect(registeredThread).toStrictEqual(expectedThread);
-        expect(mockThreadRepository.getThread).toBeCalledWith('thread-123');
+        expect(addedThread).toStrictEqual(expectedThread);
+        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
     });
 });

@@ -1,6 +1,7 @@
 const Comment = require('../../../Domains/comments/entities/Comment');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const CommentUseCase = require('../CommentUseCase');
+const AddedComment = require("../../../Domains/comments/entities/AddedComment");
 
 describe('AddCUseCase', () => {
     it('should orchestrating the add comment action correctly', async () => {
@@ -8,13 +9,12 @@ describe('AddCUseCase', () => {
         const useCasePayload = {
             content: 'dicoding',
             threadId: 'thread-123',
-            username: 'user-123',
+            userId: 'user-123',
         };
-        const expectedComment = new Comment({
+        const expectedComment = new AddedComment({
             id: 'comment-123',
             content: useCasePayload.content,
-            threadId: useCasePayload.threadId,
-            username: useCasePayload.username,
+            owner: useCasePayload.userId,
         });
 
         /** creating dependency of use case */
@@ -22,23 +22,27 @@ describe('AddCUseCase', () => {
 
         /** mocking needed function */
         mockCommentRepository.addComment = jest.fn()
-            .mockImplementation(() => Promise.resolve(expectedComment));
+            .mockImplementation(() => Promise.resolve(new AddedComment({
+                id: 'comment-123',
+                content: useCasePayload.content,
+                owner: useCasePayload.userId,
+            })));
 
         /** creating use case instance */
-        const getCommentUseCase = new CommentUseCase({
+        const commentUseCase = new CommentUseCase({
             commentRepository: mockCommentRepository
         });
 
         // Action
-        const registeredComment = await getCommentUseCase.addComment(useCasePayload);
+        const addedComment = await commentUseCase.addComment(useCasePayload);
 
         // Assert
-        expect(registeredComment).toStrictEqual(expectedComment);
-        expect(mockCommentRepository.addComment).toBeCalledWith(new Comment({
-            content: useCasePayload.content,
-            threadId: useCasePayload.threadId,
-            username: useCasePayload.username
-        }));
+        expect(addedComment).toStrictEqual(expectedComment);
+        expect(mockCommentRepository.addComment).toBeCalledWith({
+            content: 'dicoding',
+            threadId: 'thread-123',
+            userId: 'user-123',
+        });
     });
 
     it('should throw error if use case payload not contain id', async () => {
@@ -79,9 +83,9 @@ describe('GetCommentUseCase', () => {
         // Arrange
         const expectedComment = new Comment({
             id: 'comment-123',
-            content: 'dicoding',
-            threadId: 'thread-123',
-            username: 'user-123',
+            content: 'content',
+            date: '2022-12-31T17:00:00.000Z',
+            username: 'dicoding',
         });
 
         /** creating dependency of use case */
@@ -89,7 +93,12 @@ describe('GetCommentUseCase', () => {
 
         /** mocking needed function */
         mockCommentRepository.getComment = jest.fn()
-            .mockImplementation(() => Promise.resolve(expectedComment));
+            .mockImplementation(() => Promise.resolve(new Comment({
+                id: 'comment-123',
+                content: 'content',
+                date: '2022-12-31T17:00:00.000Z',
+                username: 'dicoding',
+            })));
 
         /** creating use case instance */
         const getCommentUseCase = new CommentUseCase({
@@ -97,10 +106,10 @@ describe('GetCommentUseCase', () => {
         });
 
         // Action
-        const registeredComment = await getCommentUseCase.getComment('thread-123','comment-123');
+        const addedComment = await getCommentUseCase.getComment('thread-123','comment-123');
 
         // Assert
-        expect(registeredComment).toStrictEqual(expectedComment);
+        expect(addedComment).toStrictEqual(expectedComment);
         expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
     });
 });
