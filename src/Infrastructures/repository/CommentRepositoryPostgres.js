@@ -19,19 +19,13 @@ class CommentRepositoryPostgres extends CommentsRepository {
             text: 'INSERT INTO comments VALUES($1, $2, $3, $4, now(), false) RETURNING id, content, user_id as owner',
             values: [id, threadId, userId, content],
         };
-
         const result = await this._pool.query(query);
-
-        if (!result.rowCount) {
-            throw new InvariantError('Gagal menambahkan komentar');
-        }
-
         return result.rows[0];
     }
 
     async getComment(threadId, commentId) {
         const query = {
-            text: 'SELECT comments.id, u.username, content, date FROM comments join users u on comments.user_id = u.id WHERE comments.id = $1 and thread_id = $2 and is_delete = false order by date asc ',
+            text: 'SELECT comments.id, u.username, content, text(date) as date FROM comments join users u on comments.user_id = u.id WHERE comments.id = $1 and thread_id = $2 and is_delete = false order by date asc ',
             values: [commentId, threadId],
         };
 
@@ -45,7 +39,7 @@ class CommentRepositoryPostgres extends CommentsRepository {
 
     async getCommentsByThreadId(threadId) {
         const query = {
-            text: `SELECT c.id, u.username, date, (case when is_delete then '**komentar telah dihapus**' else content end) as content FROM comments c join users u on u.id = c.user_id WHERE thread_id = $1 order by date`,
+            text: `SELECT c.id, u.username, text(date) as date, content, is_delete FROM comments c join users u on u.id = c.user_id WHERE thread_id = $1 order by date`,
             values: [threadId],
         };
 
@@ -61,7 +55,7 @@ class CommentRepositoryPostgres extends CommentsRepository {
         };
         const resultCheckComment = await this._pool.query(queryCheckComment);
         if (!resultCheckComment.rowCount) {
-            throw new NotFoundError('komentar v tidak ditemukan');
+            throw new NotFoundError('komentar tidak ditemukan');
         }
         if (resultCheckComment.rows[0].user_id !== userId) {
             throw new AuthorizationError('Anda tidak berhak mengakses resource ini');

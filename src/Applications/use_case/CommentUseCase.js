@@ -1,18 +1,15 @@
 const AddComment = require("../../Domains/comments/entities/AddComment");
 
 class CommentUseCase {
-    constructor({ commentRepository }) {
+    constructor({ threadRepository, commentRepository }) {
+        this._threadRepository = threadRepository;
         this._commentRepository = commentRepository;
     }
 
-    addComment(useCasePayload) {
+    async addComment(useCasePayload) {
         const comment = new AddComment(useCasePayload);
+        await this._threadRepository.getThreadById(comment.threadId);
         return this._commentRepository.addComment(comment);
-    }
-
-    async getCommentsByThreadId(threadId) {
-        this._validateString(threadId);
-        return this._commentRepository.getCommentsByThreadId(threadId);
     }
 
     async getComment(threadId, commentId) {
@@ -21,16 +18,13 @@ class CommentUseCase {
         return this._commentRepository.getComment(threadId, commentId);
     }
 
-    async verifyCommentOwner(commentId, userId) {
-        this._validateString(commentId);
-        this._validateString(userId);
-        return this._commentRepository.verifyCommentOwner(commentId, userId);
-    }
-
     async deleteComment(threadId, commentId, userId) {
         this._validateString(threadId);
         this._validateString(commentId);
         this._validateString(userId);
+        await this._threadRepository.getThreadById(threadId);
+        await this._commentRepository.verifyCommentOwner(commentId, userId);
+        await this._commentRepository.getComment(threadId, commentId);
         return this._commentRepository.deleteComment(threadId, commentId, userId);
     }
 

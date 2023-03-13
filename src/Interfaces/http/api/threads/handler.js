@@ -1,6 +1,4 @@
 const ThreadUseCase = require('../../../../Applications/use_case/ThreadUseCase');
-const CommentUseCase = require('../../../../Applications/use_case/CommentUseCase');
-const ReplyUseCase = require("../../../../Applications/use_case/ReplyUseCase");
 
 class ThreadsHandler {
     constructor(container) {
@@ -24,20 +22,11 @@ class ThreadsHandler {
 
     async getThreadHandler(request, h) {
         const threadUseCase = this._container.getInstance(ThreadUseCase.name);
-        const commentUseCase = this._container.getInstance(CommentUseCase.name);
-        const replyUseCase = this._container.getInstance(ReplyUseCase.name);
         const thread = await threadUseCase.getThread(request.params.id);
-        const comments = await commentUseCase.getCommentsByThreadId(request.params.id);
-        await Promise.all(comments.map(async comment => {
-            comment.replies = await replyUseCase.getRepliesInCommentsThread(request.params.id, comment.id)
-        }))
         const response = h.response({
             status: 'success',
             data: {
-                thread: {
-                    ...thread,
-                    comments
-                },
+                thread
             },
         });
         response.code(200);

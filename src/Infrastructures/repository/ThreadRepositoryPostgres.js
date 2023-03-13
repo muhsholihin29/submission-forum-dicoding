@@ -20,10 +20,6 @@ class ThreadRepositoryPostgres extends ThreadsRepository {
 
         const result = await this._pool.query(query);
 
-        if (!result.rowCount) {
-            throw new InvariantError('Gagal menambahkan thread');
-        }
-
         return result.rows[0];
     }
 

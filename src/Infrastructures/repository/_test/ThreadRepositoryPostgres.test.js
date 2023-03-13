@@ -16,7 +16,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
 
     describe('addThread function', () => {
-        it('should persist add user', async () => {
+        it('should persist add thread', async () => {
             // Arrange
             const userId = 'user-123';
             const addThread = new Thread({
@@ -70,7 +70,7 @@ describe('ThreadRepositoryPostgres', () => {
             expect(threads.id).toEqual('thread-123');
         });
 
-        it('should return thread correctly', async () => {
+        it('should return throw NotFoundError when thread not found', async () => {
             // Arrange
             const userRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 

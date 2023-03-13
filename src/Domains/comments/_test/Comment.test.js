@@ -1,4 +1,4 @@
-const Comment = require('../../../comments/entities/Comment');
+const Comment = require('../entities/Comment');
 
 describe('a Comment entities', () => {
     it('should throw error when payload did not contain needed property', () => {
@@ -32,8 +32,9 @@ describe('a Comment entities', () => {
             username: 'dicoding'
         };
         // Action
-        const { content, date, username} = new Comment(payload);
+        const { id, content, date, username} = new Comment(payload);
         // Assert
+        expect(id).toEqual(payload.id);
         expect(content).toEqual(payload.content);
         expect(date).toEqual(payload.date);
         expect(username).toEqual(payload.username);

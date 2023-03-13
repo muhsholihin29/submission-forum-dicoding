@@ -6,6 +6,8 @@ const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper
 const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
 const AddComment = require("../../../Domains/comments/entities/AddComment");
 const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
+const AuthorizationError = require("../../../Commons/exceptions/AuthorizationError");
+const InvariantError = require("../../../Commons/exceptions/InvariantError");
 
 describe('CommentRepositoryPostgres', () => {
     afterEach(async () => {
@@ -72,7 +74,7 @@ describe('CommentRepositoryPostgres', () => {
                 .toThrowError(NotFoundError);
         });
 
-        it('should return user id correctly', async () => {
+        it('should return comments correctly', async () => {
             // Arrange
             await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
             await CommentsTableTestHelper.addComment({ id: 'comment-123', thread_id: 'thread-123' });
@@ -85,13 +87,81 @@ describe('CommentRepositoryPostgres', () => {
             expect(comment).toStrictEqual(new Comment({
                 id: 'comment-123',
                 content: 'Dicoding Indonesia',
-                date: "Sun Jan 01 2023 00:00:00 GMT+0700 (Western Indonesia Time)",
+                date: "2023-01-01",
                 username: 'dicoding'
             }));
         });
     });
 
+    describe('getCommentsByThreadId', () => {
+
+        it('should return comments correctly', async () => {
+            // Arrange
+            await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+            await CommentsTableTestHelper.addComment({ id: 'comment-123', thread_id: 'thread-123' });
+            const userRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+            // Action
+            const comment = await userRepositoryPostgres.getCommentsByThreadId('thread-123');
+
+            // Assert
+            expect(comment).toStrictEqual([{
+                id: 'comment-123',
+                content: 'Dicoding Indonesia',
+                date: "2023-01-01",
+                username: 'dicoding',
+                is_delete: false
+            }]);
+        });
+    });
+
+    describe('verifyCommentOwner', () => {
+        it('should mismatch comment owner', async () => {
+            // Arrange
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);
+            const commentId = 'comment-123';
+            const threadId = 'thread-123';
+            const userId = 'dicoding'
+            await CommentsTableTestHelper.addComment({ id: commentId, thread_id: threadId, userId });
+
+            // Action & Assert
+            await expect(commentRepositoryPostgres.verifyCommentOwner(commentId, 'uuuu'))
+                .rejects.toThrowError(AuthorizationError);
+        });
+
+        it('should return comment not found', async () => {
+            // Arrange
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);
+
+            // Action & Assert
+            await expect(commentRepositoryPostgres.verifyCommentOwner('comment-123', 'user-123'))
+                .rejects.toThrowError(NotFoundError);
+        });
+
+        it('should verify comment owner correctly', async () => {
+            // Arrange
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);
+            const commentId = 'comment-123';
+            const threadId = 'thread-123';
+            const userId = 'dicoding'
+            await CommentsTableTestHelper.addComment({ id: commentId, thread_id: threadId, userId });
+
+            await expect(commentRepositoryPostgres.verifyCommentOwner(commentId, userId))
+                .resolves
+                .not.toThrow(AuthorizationError);
+        });
+    });
+
     describe('deleteComment', () => {
+        it('should return comment not found', async () => {
+            // Arrange
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);
+
+            // Action & Assert
+            await expect(commentRepositoryPostgres.deleteComment('thread-123', 'comment-123', 'user-123'))
+                .rejects.toThrowError(NotFoundError);
+        });
+
         it('should delete comment from database', async () => {
             // Arrange
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool);

@@ -1,7 +1,7 @@
 const Comment = require('../../../Domains/comments/entities/Comment');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const CommentUseCase = require('../CommentUseCase');
-const AddedComment = require("../../../Domains/comments/entities/AddedComment");
+const ThreadRepository = require("../../../Domains/threads/ThreadRepository");
 
 describe('AddCUseCase', () => {
     it('should orchestrating the add comment action correctly', async () => {
@@ -11,25 +11,35 @@ describe('AddCUseCase', () => {
             threadId: 'thread-123',
             userId: 'user-123',
         };
-        const expectedComment = new AddedComment({
+        const expectedComment = {
             id: 'comment-123',
             content: useCasePayload.content,
             owner: useCasePayload.userId,
-        });
+        };
 
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
+        mockThreadRepository.getThreadById = jest.fn()
+            .mockImplementation(() => Promise.resolve({
+                id:  'thread-123',
+                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
+                title: 'judul',
+                date: '2023-01-01',
+                username: 'user'
+            }));
         mockCommentRepository.addComment = jest.fn()
-            .mockImplementation(() => Promise.resolve(new AddedComment({
+            .mockImplementation(() => Promise.resolve({
                 id: 'comment-123',
                 content: useCasePayload.content,
                 owner: useCasePayload.userId,
-            })));
+            }));
 
         /** creating use case instance */
         const commentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
 
@@ -38,6 +48,7 @@ describe('AddCUseCase', () => {
 
         // Assert
         expect(addedComment).toStrictEqual(expectedComment);
+        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123')
         expect(mockCommentRepository.addComment).toBeCalledWith({
             content: 'dicoding',
             threadId: 'thread-123',
@@ -48,10 +59,12 @@ describe('AddCUseCase', () => {
     it('should throw error if use case payload not contain id', async () => {
         // Arrange
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** creating use case instance */
         const commentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
 
@@ -64,10 +77,12 @@ describe('AddCUseCase', () => {
     it('should throw error if use case payload id not string', async () => {
         // Arrange
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** creating use case instance */
         const commentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
 
@@ -84,11 +99,12 @@ describe('GetCommentUseCase', () => {
         const expectedComment = new Comment({
             id: 'comment-123',
             content: 'content',
-            date: '2022-12-31T17:00:00.000Z',
+            date: '2023-01-01',
             username: 'dicoding',
         });
 
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
@@ -96,14 +112,17 @@ describe('GetCommentUseCase', () => {
             .mockImplementation(() => Promise.resolve(new Comment({
                 id: 'comment-123',
                 content: 'content',
-                date: '2022-12-31T17:00:00.000Z',
+                date: '2023-01-01',
                 username: 'dicoding',
             })));
 
         /** creating use case instance */
         const getCommentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
+
+
 
         // Action
         const addedComment = await getCommentUseCase.getComment('thread-123','comment-123');
@@ -119,27 +138,50 @@ describe('Delete CommentUseCase', () => {
     it('should orchestrating the delete comment action correctly', async () => {
         // Arrange
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
+        mockThreadRepository.getThreadById = jest.fn()
+            .mockImplementation(() => Promise.resolve({
+                id:  'thread-123',
+                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
+                title: 'judul',
+                date: 'date',
+                username: 'user'
+            }));
+        mockCommentRepository.verifyCommentOwner = jest.fn()
+            .mockImplementation(() => Promise.resolve());
+        mockCommentRepository.getComment = jest.fn()
+            .mockImplementation(() => Promise.resolve(new Comment({
+                id: 'comment-123',
+                content: 'content',
+                date: '2023-01-01',
+                username: 'dicoding',
+            })));
         mockCommentRepository.deleteComment = jest.fn()
             .mockImplementation(() => Promise.resolve());
 
         /** creating use case instance */
         const commentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
 
         // Action
-        await expect(commentUseCase.deleteComment('thread-123', 'comment-123', 'dicoding'))
+        await commentUseCase.deleteComment('thread-123', 'comment-123', 'dicoding')
 
         // Assert
+        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
+        expect(mockCommentRepository.verifyCommentOwner).toBeCalledWith('comment-123', 'dicoding');
+        expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
         expect(mockCommentRepository.deleteComment).toBeCalledWith('thread-123','comment-123', 'dicoding');
     });
 
     it('should throw error if use case payload not contain id', async () => {
         // Arrange
         /** creating dependency of use case */
+        const mockThreadRepository = new ThreadRepository();
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
@@ -148,6 +190,7 @@ describe('Delete CommentUseCase', () => {
 
         /** creating use case instance */
         const commentUseCase = new CommentUseCase({
+            threadRepository: mockThreadRepository,
             commentRepository: mockCommentRepository
         });
 

@@ -20,10 +20,6 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
         const result = await this._pool.query(query);
 
-        if (!result.rowCount) {
-            throw new NotFoundError('gagal menambahkan balasan');
-        }
-
         return result.rows[0];
     }
 
@@ -43,7 +39,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
     async getRepliesInCommentsThread(threadId, commentId) {
         const query = {
-            text: 'SELECT r.id, (case when is_delete then \'**komentar telah dihapus**\' else content end) as content, date, u.username FROM replies r join users u on r.owner = u.id WHERE thread_id = $1 and comment_id = $2 order by date',
+            text: 'SELECT r.id, content, text(date) as date, u.username, is_delete FROM replies r join users u on r.owner = u.id WHERE thread_id = $1 and comment_id = $2 order by date',
             values: [threadId, commentId],
         };
 

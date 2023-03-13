@@ -1,5 +1,4 @@
-const AddThread = require('../../../threads/entities/AddThread');
-const AddedThread = require('../../../threads/entities/AddedThread');
+const AddThread = require('../entities/AddThread');
 
 describe('a Thread entities', () => {
     it('should throw error when payload did not contain needed property', () => {
@@ -38,15 +37,13 @@ describe('a Thread entities', () => {
         // Arrange
         const payload = {
             title: 'dicoding',
-            id: 'thread-124',
-            owner: 'user-123',
+            body: 'dicoding dicoding dicoding dicoding dicoding',
         };
         // Action
-        const { title, id, owner } = new AddedThread(payload);
+        const { title, body } = new AddThread(payload);
         // Assert
         expect(title).toEqual(payload.title);
-        expect(id).toEqual(payload.id);
-        expect(owner).toEqual(payload.owner);
+        expect(body).toEqual(payload.body);
     });
 
 });
