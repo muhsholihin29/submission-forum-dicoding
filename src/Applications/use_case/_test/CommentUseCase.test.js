@@ -22,14 +22,8 @@ describe('AddCUseCase', () => {
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
-        mockThreadRepository.getThreadById = jest.fn()
-            .mockImplementation(() => Promise.resolve({
-                id:  'thread-123',
-                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
-                title: 'judul',
-                date: '2023-01-01',
-                username: 'user'
-            }));
+        mockThreadRepository.verifyThreadAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
         mockCommentRepository.addComment = jest.fn()
             .mockImplementation(() => Promise.resolve({
                 id: 'comment-123',
@@ -48,7 +42,7 @@ describe('AddCUseCase', () => {
 
         // Assert
         expect(addedComment).toStrictEqual(expectedComment);
-        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123')
+        expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith('thread-123')
         expect(mockCommentRepository.addComment).toBeCalledWith({
             content: 'dicoding',
             threadId: 'thread-123',
@@ -142,14 +136,8 @@ describe('Delete CommentUseCase', () => {
         const mockCommentRepository = new CommentRepository();
 
         /** mocking needed function */
-        mockThreadRepository.getThreadById = jest.fn()
-            .mockImplementation(() => Promise.resolve({
-                id:  'thread-123',
-                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
-                title: 'judul',
-                date: 'date',
-                username: 'user'
-            }));
+        mockThreadRepository.verifyThreadAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
         mockCommentRepository.verifyCommentOwner = jest.fn()
             .mockImplementation(() => Promise.resolve());
         mockCommentRepository.getComment = jest.fn()
@@ -172,7 +160,7 @@ describe('Delete CommentUseCase', () => {
         await commentUseCase.deleteComment('thread-123', 'comment-123', 'dicoding')
 
         // Assert
-        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
+        expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith('thread-123');
         expect(mockCommentRepository.verifyCommentOwner).toBeCalledWith('comment-123', 'dicoding');
         expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
         expect(mockCommentRepository.deleteComment).toBeCalledWith('thread-123','comment-123', 'dicoding');

@@ -8,7 +8,7 @@ class CommentUseCase {
 
     async addComment(useCasePayload) {
         const comment = new AddComment(useCasePayload);
-        await this._threadRepository.getThreadById(comment.threadId);
+        await this._threadRepository.verifyThreadAvailability(comment.threadId);
         return this._commentRepository.addComment(comment);
     }
 
@@ -22,7 +22,7 @@ class CommentUseCase {
         this._validateString(threadId);
         this._validateString(commentId);
         this._validateString(userId);
-        await this._threadRepository.getThreadById(threadId);
+        await this._threadRepository.verifyThreadAvailability(threadId);
         await this._commentRepository.verifyCommentOwner(commentId, userId);
         await this._commentRepository.getComment(threadId, commentId);
         return this._commentRepository.deleteComment(threadId, commentId, userId);

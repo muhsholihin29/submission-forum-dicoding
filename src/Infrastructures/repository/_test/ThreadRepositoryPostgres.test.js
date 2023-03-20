@@ -59,6 +59,13 @@ describe('ThreadRepositoryPostgres', () => {
     describe('getThread function', () => {
         it('should persist thread', async () => {
             // Arrange
+            const expectedThread = {
+                id: 'thread-123',
+                title: 'secret',
+                body: 'Dicoding IndonesiaDicoding IndonesiaDicoding IndonesiaDicoding Indonesia',
+                date: '2023-01-01',
+                username: 'dicoding',
+            }
             await UsersTableTestHelper.addUser({ id: 'user-123' });
             await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
             const userRepositoryPostgres = new ThreadRepositoryPostgres(pool);
@@ -67,7 +74,7 @@ describe('ThreadRepositoryPostgres', () => {
             const threads = await userRepositoryPostgres.getThreadById('thread-123');
 
             // Assert
-            expect(threads.id).toEqual('thread-123');
+            expect(threads).toStrictEqual(expectedThread);
         });
 
         it('should return throw NotFoundError when thread not found', async () => {
@@ -76,6 +83,28 @@ describe('ThreadRepositoryPostgres', () => {
 
             // Assert
             await expect(userRepositoryPostgres.getThreadById('thread-123'))
+                .rejects.toThrow(NotFoundError);
+        });
+    });
+
+    describe('verifyThreadAvailability function', () => {
+        it('should persist thread', async () => {
+            // Arrange
+            await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
+            const userRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+            // Action & Assert
+            await expect(userRepositoryPostgres.verifyThreadAvailability('thread-123'))
+                .resolves
+                .not.toThrow(NotFoundError);
+        });
+
+        it('should return throw NotFoundError when thread not found', async () => {
+            // Arrange
+            const userRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+            // Assert
+            await expect(userRepositoryPostgres.verifyThreadAvailability('thread-123'))
                 .rejects.toThrow(NotFoundError);
         });
     });

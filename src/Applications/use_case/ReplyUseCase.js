@@ -13,7 +13,7 @@ class ReplyUseCase {
 
     async addReply(owner, threadId, commentId, content) {
         const reply = new Reply({owner, threadId, commentId, content});
-        await this._threadRepository.getThreadById(threadId);
+        await this._threadRepository.verifyThreadAvailability(threadId);
         await this._commentRepository.getComment(threadId, commentId);
         return this._replyRepository.addReply(reply);
     }
@@ -22,7 +22,7 @@ class ReplyUseCase {
         this._validateString(threadId);
         this._validateString(commentId);
         this._validateString(replyId);
-        await this._threadRepository.getThreadById(threadId);
+        await this._threadRepository.verifyThreadAvailability(threadId);
         await this._commentRepository.getComment(threadId, commentId);
         await this._replyRepository.getReply(threadId, commentId, replyId,);
         await this._replyRepository.verifyReplyOwner(replyId, userId)

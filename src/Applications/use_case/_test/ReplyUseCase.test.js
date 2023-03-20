@@ -26,14 +26,8 @@ describe('AddCUseCase', () => {
         const mockReplyRepository = new ReplyRepository();
 
         /** mocking needed function */
-        mockThreadRepository.getThreadById = jest.fn()
-            .mockImplementation(() => Promise.resolve({
-                id:  'thread-123',
-                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
-                title: 'judul',
-                date: 'date',
-                username: 'user'
-            }));
+        mockThreadRepository.verifyThreadAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
         mockCommentRepository.getComment = jest.fn()
             .mockImplementation(() => Promise.resolve(new Comment({
                 id: 'comment-123',
@@ -59,7 +53,7 @@ describe('AddCUseCase', () => {
         const registeredReply = await getReplyUseCase.addReply(data.owner, data.threadId, data.commentId, data.content);
 
         // Assert
-        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
+        expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith('thread-123');
         expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
         expect(registeredReply).toStrictEqual(expectedReply);
         expect(mockReplyRepository.addReply).toBeCalledWith(new Reply({
@@ -142,14 +136,8 @@ describe('Delete ReplyUseCase', () => {
         const mockReplyRepository = new ReplyRepository();
 
         /** mocking needed function */
-        mockThreadRepository.getThreadById = jest.fn()
-            .mockImplementation(() => Promise.resolve({
-                id:  'thread-123',
-                body: 'aaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbccccccccccccc',
-                title: 'judul',
-                date: 'date',
-                username: 'user'
-            }));
+        mockThreadRepository.verifyThreadAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
         mockCommentRepository.getComment = jest.fn()
             .mockImplementation(() => Promise.resolve(new Comment({
                 id: 'comment-123',
@@ -181,7 +169,7 @@ describe('Delete ReplyUseCase', () => {
         await commentUseCase.deleteReply('thread-123', 'comment-123', 'reply-123', 'user-123')
 
         // Assert
-        expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
+        expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith('thread-123');
         expect(mockCommentRepository.getComment).toBeCalledWith('thread-123','comment-123');
         expect(mockReplyRepository.getReply).toBeCalledWith('thread-123','comment-123', 'reply-123');
         expect(mockReplyRepository.verifyReplyOwner).toBeCalledWith('reply-123', 'user-123');
