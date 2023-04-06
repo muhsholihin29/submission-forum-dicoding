@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - uses: actions/checkout@v2
@@ -39,3 +38,4 @@ jobs:
           PGPORT: ${{ secrets.PGPORT_TEST }}
           ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
           REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
+
